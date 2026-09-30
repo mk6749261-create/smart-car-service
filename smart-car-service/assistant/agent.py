@@ -21,11 +21,8 @@ Design notes (documented per NFR-13):
   it ever runs.
 """
 
-# from django.conf import settings
-# from google import genai
-# from google.genai import types
-
-import base64
+import logging
+import traceback
 
 from django.conf import settings
 from google import genai
@@ -33,6 +30,8 @@ from google.genai import types
 
 from .tool_specs import TOOL_SPECS
 from .tools import TOOLS, ToolError
+
+logger = logging.getLogger(__name__)
 
 MODEL_NAME = "gemini-flash-latest"
 MAX_TOOL_ROUNDS = 6
@@ -99,129 +98,23 @@ def _execute_tool(user, name, tool_input):
         return {"error": "Something went wrong while performing this action."}
 
 
-# def _parts_from_response(response):
-#     """Convert the model's response into our plain-dict part format."""
-#     parts = []
-#     candidate = response.candidates[0]
-#     for part in candidate.content.parts:
-#         if getattr(part, "function_call", None) is not None:
-#             parts.append(
-#                 {
-#                     "function_call": {
-#                         "name": part.function_call.name,
-#                         "args": dict(part.function_call.args or {}),
-#                     }
-#                 }
-#             )
-#         elif getattr(part, "text", None):
-#             parts.append({"text": part.text})
-#     return parts
-
 def _parts_from_response(response):
-    """Convert Gemini response parts into JSON-safe dicts while preserving
-    thought_signature and function-call metadata.
-    """
+    """Convert the model's response into our plain-dict part format."""
     parts = []
     candidate = response.candidates[0]
-
     for part in candidate.content.parts:
-        part_data = {}
-
-        # Preserve text
-        if getattr(part, "text", None):
-            part_data["text"] = part.text
-
-        # Preserve function call
-        function_call = getattr(part, "function_call", None)
-        if function_call is not None:
-            call_data = {
-                "name": function_call.name,
-                "args": dict(function_call.args or {}),
-            }
-
-            # Preserve function-call ID when present
-            if getattr(function_call, "id", None):
-                call_data["id"] = function_call.id
-
-            part_data["function_call"] = call_data
-
-        # Preserve Gemini thought signature.
-        # It is bytes in Python, so encode it as Base64 for JSON transport.
-        thought_signature = getattr(part, "thought_signature", None)
-        if thought_signature:
-            part_data["thought_signature"] = base64.b64encode(
-                thought_signature
-            ).decode("ascii")
-
-        if part_data:
-            parts.append(part_data)
-
-    return parts
-
-
-def _contents_for_gemini(conversation):
-    """Convert our JSON-safe conversation dicts back into Gemini Content objects."""
-    contents = []
-
-    for item in conversation:
-        role = item.get("role")
-        converted_parts = []
-
-        for part_data in item.get("parts", []):
-            # Text part
-            if "text" in part_data:
-                converted_parts.append(
-                    types.Part(text=part_data["text"])
-                )
-
-            # Function call part
-            elif "function_call" in part_data:
-                call = part_data["function_call"]
-
-                function_call = types.FunctionCall(
-                    name=call["name"],
-                    args=call.get("args", {}),
-                )
-
-                if call.get("id"):
-                    function_call.id = call["id"]
-
-                part = types.Part(function_call=function_call)
-
-                # Restore thought_signature from Base64
-                if part_data.get("thought_signature"):
-                    part.thought_signature = base64.b64decode(
-                        part_data["thought_signature"]
-                    )
-
-                converted_parts.append(part)
-
-            # Function response part
-            elif "function_response" in part_data:
-                function_response = part_data["function_response"]
-
-                converted_parts.append(
-                    types.Part(
-                        function_response=types.FunctionResponse(
-                            name=function_response["name"],
-                            response=function_response.get("response", {}),
-                        )
-                    )
-                )
-
-        contents.append(
-            types.Content(
-                role=role,
-                parts=converted_parts,
+        if getattr(part, "function_call", None) is not None:
+            parts.append(
+                {
+                    "function_call": {
+                        "name": part.function_call.name,
+                        "args": dict(part.function_call.args or {}),
+                    }
+                }
             )
-        )
-
-    return contents
-
-
-
-
-
+        elif getattr(part, "text", None):
+            parts.append({"text": part.text})
+    return parts
 
 
 def _text_from_parts(parts):
@@ -233,13 +126,12 @@ def _function_calls_from_parts(parts):
 
 
 def run_agent(user, message, conversation=None, confirm=False):
-    contents = _contents_for_gemini(conversation or [])
+    contents = list(conversation or [])
     client = _client()
     config = _config()
 
     if confirm:
-        # The previous turn stopped on a pending confirmation-required
-        # function_call. The user just said yes - run it now.
+        # التعامل مع تأكيد الحجز المسبق
         last = contents[-1] if contents else None
         pending_calls = (
             _function_calls_from_parts(last.get("parts", []))
@@ -264,9 +156,54 @@ def run_agent(user, message, conversation=None, confirm=False):
         contents.append({"role": "user", "parts": [{"text": message}]})
 
     for _ in range(MAX_TOOL_ROUNDS):
-        response = client.models.generate_content(
-            model=MODEL_NAME, contents=contents, config=config
-        )
+        try:
+            # 🎯 تحويل الـ dicts إلى كائنات Pydantic الرسمية المتوافقة مع الـ SDK الجديد
+            pydantic_contents = []
+            for item in contents:
+                converted_parts = []
+                for p in item.get("parts", []):
+                    if "text" in p:
+                        converted_parts.append(types.Part.from_text(text=p["text"]))
+                    elif "function_call" in p:
+                        converted_parts.append(
+                            types.Part(
+                                function_call=types.FunctionCall(
+                                    name=p["function_call"]["name"],
+                                    args=p["function_call"]["args"]
+                                )
+                            )
+                        )
+                    elif "function_response" in p:
+                        converted_parts.append(
+                            types.Part(
+                                function_response=types.FunctionResponse(
+                                    name=p["function_response"]["name"],
+                                    response=p["function_response"]["response"]
+                                )
+                            )
+                        )
+                
+                pydantic_contents.append(
+                    types.Content(role=item.get("role"), parts=converted_parts)
+                )
+
+            # استدعاء السيرفر بالكائنات المعدلة والمحمية بـ Pydantic
+            response = client.models.generate_content(
+                model=MODEL_NAME, contents=pydantic_contents, config=config
+            )
+        except Exception:
+            print("=" * 60)
+            print("GEMINI API CALL FAILED:")
+            traceback.print_exc()
+            print("=" * 60)
+            logger.exception("Gemini API call failed in run_agent")
+            return {
+                "reply": "I'm having trouble reaching the assistant service right now. Please try again in a moment.",
+                "requires_confirmation": False,
+                "pending_action": None,
+                "conversation": contents,
+            }
+            
         model_parts = _parts_from_response(response)
         contents.append({"role": "model", "parts": model_parts})
 
@@ -281,7 +218,7 @@ def run_agent(user, message, conversation=None, confirm=False):
 
         needs_confirmation = [c for c in calls if c["name"] in CONFIRMATION_REQUIRED_TOOLS]
         if needs_confirmation:
-            call = needs_confirmation[0]
+            call = needs_confirmation[0]  # تم إصلاح قراءة العنصر الأول هنا
             return {
                 "reply": _text_from_parts(model_parts) or "I need your confirmation before I do that.",
                 "requires_confirmation": True,

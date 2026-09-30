@@ -5,3 +5,4 @@ class BusinessLogicError(Exception):
     REST API or the AI Agent) - it never contains internal/technical detail.
     """
     pass
+

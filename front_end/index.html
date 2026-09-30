@@ -1,0 +1,834 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Car Service</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+
+<!-- =========================
+     AUTHENTICATION
+========================= -->
+
+<div id="authArea" class="auth-area">
+
+    <div class="auth-container">
+
+        <div class="brand">
+            <div class="brand-icon">🚗</div>
+            <h1>Smart Car Service</h1>
+            <p>Smart maintenance for your car</p>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="loginBox" class="auth-box">
+
+            <h2>Welcome Back 👋</h2>
+            <p class="auth-subtitle">Login to your account</p>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input
+                        type="text"
+                        id="loginUsername"
+                        placeholder="Enter your username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="primary-btn">
+                    Login
+                </button>
+
+            </form>
+
+            <p class="switch-auth">
+                Don't have an account?
+                <button type="button" id="showRegisterBtn" class="link-btn">
+                    Create Account
+                </button>
+            </p>
+
+        </div>
+
+
+        <!-- REGISTER -->
+        <div id="registerBox" class="auth-box hidden">
+
+            <h2>Create Account ✨</h2>
+            <p class="auth-subtitle">Register a new account</p>
+
+            <form id="registerForm">
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="registerFirstName">First Name</label>
+                        <input
+                            type="text"
+                            id="registerFirstName"
+                            placeholder="First name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerLastName">Last Name</label>
+                        <input
+                            type="text"
+                            id="registerLastName"
+                            placeholder="Last name"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input
+                        type="text"
+                        id="registerUsername"
+                        placeholder="Choose a username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input
+                        type="email"
+                        id="registerEmail"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input
+                        type="password"
+                        id="registerPassword"
+                        placeholder="Create a password"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword2">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="registerPassword2"
+                        placeholder="Repeat your password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="primary-btn">
+                    Create Account
+                </button>
+
+            </form>
+
+            <p class="switch-auth">
+                Already have an account?
+                <button type="button" id="showLoginBtn" class="link-btn">
+                    Login
+                </button>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     APPLICATION
+========================= -->
+
+<div id="appArea" class="app-area hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-icon small">🚗</div>
+
+            <div>
+                <h2>Smart Car</h2>
+                <span>Service</span>
+            </div>
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <button class="nav-btn active" data-page="dashboard">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </button>
+
+            <button class="nav-btn" data-page="cars">
+                <span>🚗</span>
+                <span>My Cars</span>
+            </button>
+
+            <button class="nav-btn" data-page="details">
+                <span>📋</span>
+                <span>Car Details</span>
+            </button>
+
+            <button class="nav-btn" data-page="maintenance">
+                <span>🔧</span>
+                <span>Maintenance</span>
+            </button>
+
+            <button class="nav-btn" data-page="appointments">
+                <span>📅</span>
+                <span>Appointments</span>
+            </button>
+
+            <button class="nav-btn" data-page="services">
+                <span>🛠️</span>
+                <span>Services</span>
+            </button>
+
+            <button class="nav-btn" data-page="assistant">
+                <span>🤖</span>
+                <span>AI Assistant</span>
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <button id="themeBtn" class="side-action">
+                🌙 <span>Dark Mode</span>
+            </button>
+
+            <button id="logoutBtn" class="side-action logout">
+                🚪 <span>Logout</span>
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+
+                <div class="backend-status">
+                    <span id="statusDot" class="status-dot"></span>
+                    <span id="statusText">Checking backend...</span>
+                </div>
+            </div>
+
+            <div class="user-avatar" id="userAvatar">
+                U
+            </div>
+
+        </header>
+
+
+        <!-- =========================
+             DASHBOARD
+        ========================= -->
+
+        <section id="page-dashboard" class="page active">
+
+            <div class="hero-card">
+
+                <div>
+                    <span class="hero-small">SMART CAR SERVICE</span>
+
+                    <h2>
+                        Take care of your car.
+                        <br>
+                        <span>We'll take care of the rest.</span>
+                    </h2>
+
+                    <p>
+                        Manage your vehicles, maintenance,
+                        appointments and get help from our AI assistant.
+                    </p>
+
+                    <div class="hero-actions">
+
+                        <button
+                            class="primary-btn"
+                            onclick="openPage('cars')"
+                        >
+                            🚗 My Cars
+                        </button>
+
+                        <button
+                            class="secondary-btn"
+                            onclick="openPage('assistant')"
+                        >
+                            🤖 Ask AI
+                        </button>
+
+                    </div>
+                </div>
+
+                <div class="hero-car">
+                    🚘
+                </div>
+
+            </div>
+
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon">🚗</div>
+
+                    <div>
+                        <span>Total Cars</span>
+                        <strong id="vehicleCount">0</strong>
+                    </div>
+                </div>
+
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔧</div>
+
+                    <div>
+                        <span>Maintenance</span>
+                        <strong>Smart</strong>
+                    </div>
+                </div>
+
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+
+                    <div>
+                        <span>Appointments</span>
+                        <strong>Easy</strong>
+                    </div>
+                </div>
+
+
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+
+                    <div>
+                        <span>AI Assistant</span>
+                        <strong>Online</strong>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>My Vehicles</h2>
+                        <p>Your registered cars</p>
+                    </div>
+
+                    <button
+                        class="small-btn"
+                        onclick="openPage('cars')"
+                    >
+                        View All
+                    </button>
+
+                </div>
+
+                <div id="dashboardVehicles" class="vehicle-list">
+
+                    <div class="empty-state">
+                        <span>🚗</span>
+                        <h3>No cars yet</h3>
+                        <p>Add your first vehicle from My Cars.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             MY CARS
+        ========================= -->
+
+        <section id="page-cars" class="page">
+
+            <div class="page-header">
+
+                <div>
+                    <h2>My Cars</h2>
+                    <p>Manage your registered vehicles.</p>
+                </div>
+
+                <button id="addVehicleBtn" class="primary-btn">
+                    + Add Car
+                </button>
+
+            </div>
+
+
+            <div id="carsList" class="vehicle-grid">
+
+                <div class="empty-state">
+                    <span>🚗</span>
+                    <h3>No vehicles found</h3>
+                    <p>Add your first vehicle to get started.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             CAR DETAILS
+        ========================= -->
+
+        <section id="page-details" class="page">
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Car Details</h2>
+                    <p>View information about your selected vehicle.</p>
+                </div>
+
+            </div>
+
+            <div id="carDetailsContent">
+
+                <div class="empty-state">
+                    <span>📋</span>
+                    <h3>No car selected</h3>
+                    <p>Select a vehicle from My Cars.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             MAINTENANCE
+        ========================= -->
+
+        <section id="page-maintenance" class="page">
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Maintenance</h2>
+                    <p>Keep your car in perfect condition.</p>
+                </div>
+
+                <button class="primary-btn" onclick="askMaintenance()">
+                    🤖 Ask AI
+                </button>
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-card">
+                    <span class="big-icon">🛢️</span>
+                    <h3>Oil Change</h3>
+                    <p>Ask AI about the recommended oil change schedule.</p>
+                </div>
+
+                <div class="info-card">
+                    <span class="big-icon">🛞</span>
+                    <h3>Tire Check</h3>
+                    <p>Get advice about tire pressure and replacement.</p>
+                </div>
+
+                <div class="info-card">
+                    <span class="big-icon">🔋</span>
+                    <h3>Battery</h3>
+                    <p>Check common battery problems and maintenance.</p>
+                </div>
+
+                <div class="info-card">
+                    <span class="big-icon">🧰</span>
+                    <h3>General Service</h3>
+                    <p>Get a complete maintenance recommendation.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             APPOINTMENTS
+        ========================= -->
+
+        <section id="page-appointments" class="page">
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Appointments</h2>
+                    <p>Manage your car service appointments.</p>
+                </div>
+
+                <button class="primary-btn" onclick="askAppointments()">
+                    🤖 Ask AI
+                </button>
+
+            </div>
+
+
+            <div class="empty-state large">
+
+                <span>📅</span>
+
+                <h3>Service Appointments</h3>
+
+                <p>
+                    Ask the AI assistant to help you
+                    with your next service appointment.
+                </p>
+
+                <button
+                    class="secondary-btn"
+                    onclick="askAppointments()"
+                >
+                    Ask AI About Appointments
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             SERVICES
+        ========================= -->
+
+        <section id="page-services" class="page">
+
+            <div class="page-header">
+
+                <div>
+                    <h2>Services</h2>
+                    <p>Available car services.</p>
+                </div>
+
+                <button class="primary-btn" onclick="askServices()">
+                    🤖 Ask AI
+                </button>
+
+            </div>
+
+
+            <div class="service-grid">
+
+                <div class="service-card">
+                    <span>🔧</span>
+                    <h3>Regular Maintenance</h3>
+                    <p>Oil, filters and general inspection.</p>
+                </div>
+
+                <div class="service-card">
+                    <span>🛞</span>
+                    <h3>Tire Service</h3>
+                    <p>Tire inspection and replacement.</p>
+                </div>
+
+                <div class="service-card">
+                    <span>🔋</span>
+                    <h3>Battery Service</h3>
+                    <p>Battery inspection and assistance.</p>
+                </div>
+
+                <div class="service-card">
+                    <span>🚘</span>
+                    <h3>Full Inspection</h3>
+                    <p>Complete vehicle health inspection.</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             AI ASSISTANT
+        ========================= -->
+
+        <section id="page-assistant" class="page">
+
+            <div class="assistant-container">
+
+                <div class="assistant-header">
+
+                    <div class="ai-avatar">
+                        🤖
+                    </div>
+
+                    <div>
+                        <h2>Smart Car AI</h2>
+
+                        <p>
+                            Your intelligent car service assistant
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div id="chatMessages" class="chat-messages">
+
+                    <div class="message ai">
+
+                        <div class="message-avatar">
+                            🤖
+                        </div>
+
+                        <div class="message-content">
+                            Hello! 👋 I'm your Smart Car AI Assistant.
+                            <br><br>
+                            I can help you with your car,
+                            maintenance, services and appointments.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-prompts">
+
+                    <button
+                        onclick="sendAIQuickPrompt('What maintenance does my car need?')"
+                    >
+                        🔧 Maintenance
+                    </button>
+
+                    <button
+                        onclick="sendAIQuickPrompt('Help me with an appointment')"
+                    >
+                        📅 Appointment
+                    </button>
+
+                    <button
+                        onclick="sendAIQuickPrompt('What services are available?')"
+                    >
+                        🛠️ Services
+                    </button>
+
+                    <button
+                        onclick="sendAIQuickPrompt('Show me information about my car')"
+                    >
+                        🚗 My Car
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="confirmationContainer"
+                    class="confirmation-box hidden"
+                >
+
+                    <p id="confirmationText">
+                        The AI wants to perform an action.
+                    </p>
+
+                    <div class="confirmation-actions">
+
+                        <button
+                            id="confirmAIAction"
+                            class="primary-btn"
+                        >
+                            Confirm
+                        </button>
+
+                        <button
+                            id="hideConfirmationButton"
+                            class="secondary-btn"
+                        >
+                            Cancel
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="chat-input-area">
+
+                    <textarea
+                        id="chatInput"
+                        rows="1"
+                        placeholder="Ask your car assistant..."
+                    ></textarea>
+
+                    <button id="sendChatBtn">
+                        ➤
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- =========================
+     VEHICLE MODAL
+========================= -->
+
+<div id="vehicleModal" class="modal hidden">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <h2 id="vehicleModalTitle">Add Vehicle</h2>
+                <p>Enter your vehicle information.</p>
+            </div>
+
+            <button id="closeVehicleModal" class="close-btn">
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="vehicleForm">
+
+            <input
+                type="hidden"
+                id="vehicleId"
+            >
+
+            <div class="form-group">
+                <label for="vehicleMake">Make</label>
+
+                <input
+                    type="text"
+                    id="vehicleMake"
+                    placeholder="Toyota"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label for="vehicleModel">Model</label>
+
+                <input
+                    type="text"
+                    id="vehicleModel"
+                    placeholder="Corolla"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label for="vehicleYear">Year</label>
+
+                <input
+                    type="number"
+                    id="vehicleYear"
+                    placeholder="2024"
+                    min="1900"
+                    max="2100"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label for="vehiclePlate">Plate Number</label>
+
+                <input
+                    type="text"
+                    id="vehiclePlate"
+                    placeholder="ABC 1234"
+                    required
+                >
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    id="cancelVehicleBtn"
+                    class="secondary-btn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-btn"
+                >
+                    Save Vehicle
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TOAST
+========================= -->
+
+<div id="toast" class="toast">
+    <span id="toastIcon">✓</span>
+    <span id="toastMessage">Success</span>
+</div>
+
+</body>
+</html>

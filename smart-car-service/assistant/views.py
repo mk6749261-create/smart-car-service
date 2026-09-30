@@ -4,6 +4,10 @@ from rest_framework.views import APIView
 
 from .agent import run_agent
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class ChatView(APIView):
     """
@@ -31,5 +35,19 @@ class ChatView(APIView):
                 {"detail": "message is required."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        result = run_agent(request.user, message, conversation=conversation, confirm=confirm)
+        try:
+            result = run_agent(request.user, message, conversation=conversation, confirm=confirm)
+        except Exception:
+            # NFR-09: never leak internals; a broken API key, missing config,
+            # etc. should surface as a clean 503, not a Django error page.
+            import traceback
+            print("=" * 60)
+            print("run_agent FAILED (outside the Gemini call loop):")
+            traceback.print_exc()
+            print("=" * 60)
+            logger.exception("run_agent failed unexpectedly")
+            return Response(
+                {"detail": "The AI assistant is currently unavailable. Please try again shortly."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         return Response(result)
